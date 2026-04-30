@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Authorization complete — Video Automation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">Video Automation</a>
+    <nav>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1 id="title">Authorization complete</h1>
+    <p class="lead" id="message">You can now return to the Video Automation app. This window can be closed.</p>
+
+    <div class="feature" style="margin-top: 24px;">
+      <h3>Authorization code</h3>
+      <p class="muted" style="word-break: break-all;" id="code">—</p>
+      <p class="muted" style="margin-top: 12px; font-size: 13px;">
+        If the app did not pick up this code automatically, copy it and paste it into the app.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    <span>© Video Automation</span>
+    <span>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </span>
+  </footer>
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('code');
+      var error = params.get('error');
+      var errorDescription = params.get('error_description');
+
+      var titleEl = document.getElementById('title');
+      var messageEl = document.getElementById('message');
+      var codeEl = document.getElementById('code');
+
+      if (error) {
+        titleEl.textContent = 'Authorization failed';
+        messageEl.textContent = errorDescription || error;
+        codeEl.textContent = '—';
+        return;
+      }
+
+      if (code) {
+        codeEl.textContent = code;
+      } else {
+        titleEl.textContent = 'Missing authorization code';
+        messageEl.textContent = 'No code parameter was returned. Please try the login flow again.';
+      }
+    })();
+  </script>
+</body>
+</html>
