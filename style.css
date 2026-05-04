@@ -92,6 +92,90 @@ p, li { color: var(--text); }
   margin-top: 8px;
 }
 
+.cta.cta-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.cta.cta-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tiktok-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--accent);
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 8px;
+  border: none;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.tiktok-cta:hover { filter: brightness(1.08); }
+
+.tiktok-cta svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.tiktok-cta-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: 20px;
+}
+
+.tiktok-cta-nav:hover { filter: brightness(1.08); }
+
+.tiktok-cta-nav svg {
+  width: 14px;
+  height: 14px;
+}
+
+.callback-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 24px 0 32px;
+}
+
+.callback-banner.success { border-color: #2f9e44; }
+.callback-banner.error { border-color: var(--accent); }
+
+.callback-banner h2 { margin-top: 0; }
+
+.callback-banner code {
+  display: block;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 8px;
+  font-size: 13px;
+  word-break: break-all;
+}
+
 .features {
   display: grid;
   grid-template-columns: 1fr;

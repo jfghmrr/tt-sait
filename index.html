@@ -13,16 +13,37 @@
     <nav>
       <a href="privacy.html">Privacy</a>
       <a href="terms.html">Terms</a>
+      <a href="login.html">Login</a>
+      <button type="button" class="tiktok-cta-nav" id="header-login-btn" aria-label="Sign in with TikTok">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg>
+        Sign in with TikTok
+      </button>
     </nav>
   </header>
 
   <main>
+    <div id="callback-banner" class="callback-banner" hidden>
+      <h2 id="callback-title">Authorization complete</h2>
+      <p id="callback-message" class="muted">You can now return to the Video Automation app. This window can be closed.</p>
+      <p class="muted" id="callback-code-wrapper" hidden>
+        Authorization code (for the desktop app):
+        <code id="callback-code">—</code>
+      </p>
+    </div>
+
     <h1>Automated short-video publishing for creators.</h1>
     <p class="lead">
       Video Automation is a desktop tool that helps content creators batch-produce short videos and publish them to TikTok and other social platforms from a single dashboard.
     </p>
 
-    <a href="mailto:support@sergeimironov.online" class="cta">Get in touch</a>
+    <p>
+      <button type="button" class="tiktok-cta" id="hero-login-btn" aria-label="Sign in with TikTok to connect your account">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg>
+        Sign in with TikTok
+      </button>
+      &nbsp;
+      <a href="mailto:support@sergeimironov.online" class="cta cta-secondary">Get in touch</a>
+    </p>
 
     <h2>What it does</h2>
     <div class="features">
@@ -45,9 +66,12 @@
     </div>
 
     <h2>How TikTok integration works</h2>
-    <p>
-      The user signs in with their TikTok account through the official Login Kit (OAuth). Video Automation requests the <code>user.info.basic</code> scope to display the connected creator's profile in the dashboard, and the <code>video.upload</code> scope to upload pre-rendered MP4 files to the creator's TikTok account as drafts. The creator reviews and publishes each draft from the official TikTok app — Video Automation never publishes content without explicit creator approval.
-    </p>
+    <ol>
+      <li>Click <strong>Sign in with TikTok</strong> on this page or on the <a href="login.html">/login</a> page.</li>
+      <li>You will be redirected to TikTok's official Login Kit and asked to grant the <code>user.info.basic</code> and <code>video.upload</code> scopes.</li>
+      <li>After you approve, TikTok redirects you back to this site with an authorization code. The Video Automation desktop app receives that code and exchanges it for an access token using its Client Secret on your local machine.</li>
+      <li>From the desktop app, you select pre-rendered MP4 files and the app uploads them to your TikTok account as drafts via the Content Posting API (<code>video.upload</code>). The drafts wait in your TikTok inbox until you review and publish them from the official TikTok app — Video Automation never publishes content without your explicit approval.</li>
+    </ol>
 
     <h2>Contact</h2>
     <p class="muted">
@@ -60,7 +84,114 @@
     <span>
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
+      <a href="login.html">Login</a>
     </span>
   </footer>
+
+  <script>
+    (function () {
+      // TikTok Login Kit — public configuration.
+      // Client Key is a public identifier (NOT a secret). Client Secret stays
+      // on the desktop app side and is never sent to the browser.
+      var TIKTOK_CLIENT_KEY = "aw92itiys9a4ydrm";
+      var TIKTOK_REDIRECT_URI = "https://sergeimironov.online";
+      var TIKTOK_SCOPES = "user.info.basic,video.upload";
+      var STATE_STORAGE_KEY = "tiktok_oauth_state";
+
+      function generateState() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function startLogin() {
+        if (!TIKTOK_CLIENT_KEY || TIKTOK_CLIENT_KEY === "REPLACE_WITH_TIKTOK_CLIENT_KEY") {
+          alert("TikTok Client Key is not configured yet. Please contact support@sergeimironov.online.");
+          return;
+        }
+        var state = generateState();
+        try {
+          sessionStorage.setItem(STATE_STORAGE_KEY, state);
+        } catch (e) {
+          // Storage disabled (private mode) — proceed; callback will warn about state mismatch.
+        }
+        var params = new URLSearchParams({
+          client_key: TIKTOK_CLIENT_KEY,
+          scope: TIKTOK_SCOPES,
+          response_type: "code",
+          redirect_uri: TIKTOK_REDIRECT_URI,
+          state: state
+        });
+        window.location.href = "https://www.tiktok.com/v2/auth/authorize/?" + params.toString();
+      }
+
+      function showCallbackBanner(kind, title, message, code) {
+        var banner = document.getElementById("callback-banner");
+        if (!banner) return;
+        banner.hidden = false;
+        banner.classList.remove("success", "error");
+        banner.classList.add(kind);
+        document.getElementById("callback-title").textContent = title;
+        document.getElementById("callback-message").textContent = message;
+        var wrapper = document.getElementById("callback-code-wrapper");
+        var codeEl = document.getElementById("callback-code");
+        if (code) {
+          wrapper.hidden = false;
+          codeEl.textContent = code;
+        } else {
+          wrapper.hidden = true;
+        }
+      }
+
+      function handleCallbackIfPresent() {
+        var params = new URLSearchParams(window.location.search);
+        var code = params.get("code");
+        var error = params.get("error");
+        var state = params.get("state");
+        if (!code && !error) return;
+
+        var expectedState = null;
+        try { expectedState = sessionStorage.getItem(STATE_STORAGE_KEY); } catch (e) {}
+
+        if (error) {
+          var description = params.get("error_description") || "";
+          showCallbackBanner(
+            "error",
+            "TikTok authorization failed",
+            description ? error + ": " + description : error,
+            null
+          );
+          return;
+        }
+
+        if (expectedState && state && state !== expectedState) {
+          showCallbackBanner(
+            "error",
+            "State mismatch",
+            "The OAuth state parameter did not match what was issued by this browser. Please retry the login from this device to prevent CSRF.",
+            null
+          );
+          return;
+        }
+
+        try { sessionStorage.removeItem(STATE_STORAGE_KEY); } catch (e) {}
+
+        showCallbackBanner(
+          "success",
+          "Connected to TikTok",
+          "Authorization complete. The desktop Video Automation app picks up the code below automatically. You can close this window.",
+          code
+        );
+      }
+
+      var heroBtn = document.getElementById("hero-login-btn");
+      var headerBtn = document.getElementById("header-login-btn");
+      if (heroBtn) heroBtn.addEventListener("click", startLogin);
+      if (headerBtn) headerBtn.addEventListener("click", startLogin);
+
+      handleCallbackIfPresent();
+    })();
+  </script>
 </body>
 </html>

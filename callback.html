@@ -38,21 +38,35 @@
 
   <script>
     (function () {
+      var STATE_STORAGE_KEY = 'tiktok_oauth_state';
       var params = new URLSearchParams(window.location.search);
       var code = params.get('code');
       var error = params.get('error');
       var errorDescription = params.get('error_description');
+      var state = params.get('state');
 
       var titleEl = document.getElementById('title');
       var messageEl = document.getElementById('message');
       var codeEl = document.getElementById('code');
 
+      var expectedState = null;
+      try { expectedState = sessionStorage.getItem(STATE_STORAGE_KEY); } catch (e) {}
+
       if (error) {
         titleEl.textContent = 'Authorization failed';
-        messageEl.textContent = errorDescription || error;
+        messageEl.textContent = errorDescription ? error + ': ' + errorDescription : error;
         codeEl.textContent = '—';
         return;
       }
+
+      if (expectedState && state && state !== expectedState) {
+        titleEl.textContent = 'State mismatch';
+        messageEl.textContent = 'The OAuth state parameter did not match what was issued by this browser. Possible CSRF — please restart the login flow.';
+        codeEl.textContent = '—';
+        return;
+      }
+
+      try { sessionStorage.removeItem(STATE_STORAGE_KEY); } catch (e) {}
 
       if (code) {
         codeEl.textContent = code;

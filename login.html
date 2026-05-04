@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in with TikTok — Video Automation</title>
+  <meta name="description" content="Sign in to Video Automation with your TikTok account via the official TikTok Login Kit." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">Video Automation</a>
+    <nav>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Sign in with TikTok</h1>
+    <p class="lead">
+      Connect your TikTok creator account to Video Automation through the official TikTok Login Kit. We never see or store your TikTok password — authentication happens entirely on TikTok.
+    </p>
+
+    <p>
+      <button type="button" class="tiktok-cta" id="login-btn" aria-label="Sign in with TikTok">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/></svg>
+        Sign in with TikTok
+      </button>
+    </p>
+
+    <h2>What permissions are requested</h2>
+    <div class="features">
+      <div class="feature">
+        <h3><code>user.info.basic</code></h3>
+        <p>Read your TikTok display name, avatar URL, open ID, and union ID — used to show which account is connected inside the Video Automation dashboard.</p>
+      </div>
+      <div class="feature">
+        <h3><code>video.upload</code></h3>
+        <p>Upload pre-rendered MP4 files you have explicitly approved to your TikTok account as drafts. You review and publish each draft from the official TikTok app — Video Automation never publishes content without your approval.</p>
+      </div>
+    </div>
+
+    <h2>What happens after you sign in</h2>
+    <ol>
+      <li>You are redirected to <code>https://www.tiktok.com/v2/auth/authorize/</code> — the official TikTok consent screen.</li>
+      <li>You confirm the requested scopes (<code>user.info.basic</code> and <code>video.upload</code>) on TikTok.</li>
+      <li>TikTok redirects you back to <code>https://sergeimironov.online</code> with an authorization <code>code</code> and your original <code>state</code> parameter for CSRF protection.</li>
+      <li>The Video Automation desktop app reads the code and exchanges it for an access token using its Client Secret — that exchange happens locally on your machine, never in the browser.</li>
+    </ol>
+
+    <h2>How to revoke access</h2>
+    <p>You can revoke Video Automation's access at any time from your TikTok account settings: TikTok app → Settings and privacy → Security and login → Manage app permissions. You can also disconnect from inside the Video Automation desktop app.</p>
+
+    <p class="muted" style="margin-top: 32px;">
+      By signing in you agree to the <a href="terms.html" style="color: var(--text);">Terms of Service</a> and <a href="privacy.html" style="color: var(--text);">Privacy Policy</a>.
+    </p>
+  </main>
+
+  <footer>
+    <span>© Video Automation</span>
+    <span>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="login.html">Login</a>
+    </span>
+  </footer>
+
+  <script>
+    (function () {
+      var TIKTOK_CLIENT_KEY = "aw92itiys9a4ydrm";
+      var TIKTOK_REDIRECT_URI = "https://sergeimironov.online";
+      var TIKTOK_SCOPES = "user.info.basic,video.upload";
+      var STATE_STORAGE_KEY = "tiktok_oauth_state";
+
+      function generateState() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+          return window.crypto.randomUUID();
+        }
+        return Math.random().toString(36).slice(2) + Date.now().toString(36);
+      }
+
+      function startLogin() {
+        if (!TIKTOK_CLIENT_KEY || TIKTOK_CLIENT_KEY === "REPLACE_WITH_TIKTOK_CLIENT_KEY") {
+          alert("TikTok Client Key is not configured yet. Please contact support@sergeimironov.online.");
+          return;
+        }
+        var state = generateState();
+        try {
+          sessionStorage.setItem(STATE_STORAGE_KEY, state);
+        } catch (e) {}
+        var params = new URLSearchParams({
+          client_key: TIKTOK_CLIENT_KEY,
+          scope: TIKTOK_SCOPES,
+          response_type: "code",
+          redirect_uri: TIKTOK_REDIRECT_URI,
+          state: state
+        });
+        window.location.href = "https://www.tiktok.com/v2/auth/authorize/?" + params.toString();
+      }
+
+      var btn = document.getElementById("login-btn");
+      if (btn) btn.addEventListener("click", startLogin);
+    })();
+  </script>
+</body>
+</html>
