@@ -47,10 +47,23 @@ header {
 }
 
 .logo-img {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 7px;
   display: block;
+}
+
+.logo-text {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0;
 }
 
 nav a {
